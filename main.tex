@@ -112,25 +112,18 @@
 % =============================================================================
     \section{Scopo del Progetto}
 
-    L'obiettivo di questo progetto è analizzare e mettere in sicurezza
-    \textbf{ExtendRent}, un'applicazione backend per la gestione del noleggio di
-    autoveicoli sviluppata con \textbf{Spring Boot}, seguendo i principi del
-    \emph{Secure Software Development Lifecycle} (SSDLC).
-
-    Il lavoro si articola nelle seguenti fasi principali:
-    \begin{enumerate}
-        \item \textbf{Analisi dell'architettura}: studio del sistema, dello stack
-        tecnologico e delle superfici di attacco.
-        \item \textbf{Identificazione delle vulnerabilità}: analisi statica manuale del
-        codice sorgente; identificazione di 15 vulnerabilità classificate per
-        severità e categoria.
-        \item \textbf{Mitigazione}: applicazione di patch mirate per risolvere tutte le
-        vulnerabilità identificate.
-        \item \textbf{Verifica tramite test}: scrittura di una suite di test di sicurezza
-        a copertura delle vulnerabilità patchate, con esito 100\% pass.
-        \item \textbf{Containerizzazione}: packaging dell'applicazione con Docker,
-        adottando pratiche di sicurezza nella configurazione dei container.
-    \end{enumerate}
+    Questo progetto ha come obiettivo l'analisi e il consolidamento della
+    sicurezza di \textbf{ExtendRent}, un'applicazione REST open-source per il
+    noleggio di autoveicoli realizzata con \textbf{Spring Boot 3} e \textbf{Java 17}.
+    Il lavoro ha preso in esame il codice sorgente esistente, ne ha identificato
+    le debolezze di sicurezza, le ha risolte e ne ha verificato la correzione
+    tramite una suite di test dedicata.
+    Il progetto si articola in quattro fasi: \textbf{analisi} del codice sorgente
+    per l'individuazione delle vulnerabilità; \textbf{patch} mirate per
+    risolverle; \textbf{test} di sicurezza per verificare ogni correzione;
+    \textbf{containerizzazione} dell'applicazione con Docker secondo pratiche di
+    hardening. Le vulnerabilità identificate sono state classificate secondo
+    OWASP Top 10 2021 e CWE come riferimento tassonomico.
 % =============================================================================
     \section{Descrizione dell'Applicazione}
 % =============================================================================
@@ -239,35 +232,6 @@
         database, JWT, server SMTP e Cloudinary.
     \end{itemize}
 
-    \begin{lstlisting}[language=bash, caption={Struttura delle directory del progetto}]
-rentACar_backend/
-|-- pom.xml                      # Dipendenze Maven
-|-- src/main/
-    |-- java/src/
-    |   |-- Application.java     # Entry point + seed dati
-    |   |-- controller/          # Layer REST
-    |   |   |-- auth/         # SignUp, SignIn, refresh token, OTP
-    |   |   |-- user/            # Admin, Customer, Employee
-    |   |   |-- vehicle/         # Car + features (brand,color,...)
-    |   |   |-- rental/          # Ciclo vita noleggio
-    |   |   |-- payment/         # Pagamenti e report finanziari
-    |   |   |-- discount/        # Codici sconto
-    |   |   |-- license/         # Tipi patente di guida
-    |   |   |-- image/           # Upload immagini Cloudinary
-    |   |-- service/             # Business logic
-    |   |   |-- auth/            # AuthService, JwtService
-    |   |   |-- external/        # EmailService, OtpService
-    |   |   |-- businessrules/   # Regole di validazione dominio
-    |   |-- repository/          # Interfacce JPA (23 totali)
-    |   |-- core/
-    |       |-- config/          # SecurityConfig, SeedDataConfig
-    |       |-- security/        # JwtAuthFilter
-    |       |-- exception/    # Eccezioni custom + handler globale
-    |       |-- utilities/       # AOP logging, timer avvio
-    |-- resources/
-        |-- application.properties # Configurazione DB,JWT,Mail,CDN
-        |-- assets/default/       # Immagini default brand e utenti
-    \end{lstlisting}
 % =============================================================================
     \section{Tecnologie del Progetto}
 % =============================================================================
@@ -436,10 +400,8 @@ rentACar_backend/
             State management & Redux Toolkit & 2.0.1 \\
             HTTP client & Axios (con interceptors) & 1.6.5 \\
             Form handling & Formik + Yup & 2.4.5 / 1.3.3 \\
-            UI libraries & Material UI, Mantine, Bootstrap & 5.15 / 7.4 / 5.3 \\
-            Tabelle & material-react-table & 2.11.2 \\
+            UI libraries & Material UI, Mantine & 5.15 / 7.4 \\
             Date picker & @mantine/dates, @mui/x-date-pickers & 7.4 / 6.19 \\
-            Animazioni & Framer Motion & 10.17 \\
             Token decoding & jwt-decode & 4.0.0 \\
             Build & Create React App + React Scripts & 5.0.1 \\
             \bottomrule
@@ -477,25 +439,6 @@ rentACar_backend/
         \texttt{useToken.ts} (hook per decodare i claim JWT).
     \end{itemize}
 
-    \begin{lstlisting}[language=bash, caption={Struttura semplificata del frontend}]
-rent-a-car-frontend-project/src/
-|-- App.tsx               # Routing principale (React Router v6)
-|-- index.tsx             # Entry point con Provider Redux
-|-- pages/                # 30+ pagine per dominio
-|   |-- Homepage/         # Pubblica: search + video background
-|   |-- Login/ SignUp/    # Autenticazione
-|   |-- AdminPanel/       # Dashboard admin (protetta)
-|   |-- Cars/ Rental/     # CRUD auto e noleggi
-|   |-- Customer/         # Gestione clienti
-|   |-- PastRentals/      # Storico noleggi cliente
-|   `-- [Brands, Colors, FuelType, Discount, Payment, ...]
-|-- components/           # Componenti riutilizzabili
-|-- store/                # Redux Toolkit (22 slice)
-|-- services/             # Axios service classes (20+)
-|-- models/               # TypeScript models (request/response)
-|-- utils/                # axiosInterceptors, useToken
-`-- data/config.json      # Base URL API
-    \end{lstlisting}
 
 % ─────────────────────────────────────────────
     \subsection{Autenticazione e Sicurezza Frontend}
@@ -610,13 +553,17 @@ const axiosInstance = axios.create({
     \label{sec:vulnerabilities}
 % =============================================================================
 
-    L'analisi statica del codice sorgente è stata condotta in 4 sessioni di audit
-    utilizzando l'\textbf{OWASP Top 10 2021} come framework di classificazione e il
-    \textbf{CWE (Common Weakness Enumeration)} come riferimento tecnico per le debolezze
-    individuate. Sono state identificate complessivamente \textbf{15 vulnerabilità}
+    L'analisi è partita dalla lettura di \texttt{SecurityConfig.java}, dove la regola
+    \texttt{anyRequest().permitAll()} ha reso immediatamente evidente l'assenza di qualsiasi
+    controllo di accesso. Da lì l'ispezione si è estesa ai flussi di autenticazione, al
+    layer dei controller, ai file di configurazione e ai punti di integrazione esterna (CORS,
+    upload immagini, proprietà dell'applicazione): alcune criticità sono emerse leggendo il
+    codice, altre dall'analisi di ciò che l'applicazione espone (ad esempio, un endpoint di
+    registrazione che accettava un campo \texttt{authority} nel corpo della richiesta). I
+    risultati sono stati classificati \textit{a posteriori} secondo \textbf{OWASP Top 10 2021}
+    e \textbf{CWE} come riferimento tassonomico, non come guida alla ricerca.
+    Sono state identificate complessivamente \textbf{15 vulnerabilità}
     (14 specifiche, denominate V01--V14, più una falla architetturale, S1-1).
-    Stato di partenza: 173 casi di test con \textbf{75 fallimenti}, poiché la catena
-    di sicurezza globale era assente.
 
     \subsection{Riepilogo delle Vulnerabilità}
 
@@ -755,6 +702,50 @@ const axiosInstance = axios.create({
 .anyRequest().authenticated()
     \end{lstlisting}
 
+    Prima della patch, \texttt{anyRequest().permitAll()} rendeva ogni endpoint dell'API accessibile
+    senza alcuna autenticazione: un utente anonimo poteva invocare qualsiasi operazione
+    amministrativa. Dopo la patch, ogni endpoint è classificato in uno dei tre livelli di privilegio
+    riportati nella Tabella~\ref{tab:rbac-matrix}, che costituisce la policy di controllo degli
+    accessi dell'applicazione.
+
+    \begin{table}[H]
+        \centering
+        \small
+        \renewcommand{\arraystretch}{1.25}
+        \begin{tabular}{|p{5.2cm}|c|c|c|c|}
+            \hline
+            \textbf{Endpoint group} & \textbf{Anonimo} & \textbf{CUSTOMER} & \textbf{EMPLOYEE} & \textbf{ADMIN} \\
+            \hline
+            \multicolumn{5}{|l|}{\textit{Pubblico (nessuna autenticazione richiesta)}} \\
+            \hline
+            POST \texttt{/auth/signup}, \texttt{/auth/signin}, \texttt{/auth/isUserTrue} & 200 & 200 & 200 & 200 \\
+            POST \texttt{/refresh-token/**}                                               & 200 & 200 & 200 & 200 \\
+            GET \texttt{/verify/**}                                                        & 200 & 200 & 200 & 200 \\
+            GET \texttt{/actuator/health}                                                  & 200 & 200 & 200 & 200 \\
+            \hline
+            \multicolumn{5}{|l|}{\textit{Autenticato (qualsiasi ruolo)}} \\
+            \hline
+            POST \texttt{/auth/logout}                                                     & 401 & 200 & 200 & 200 \\
+            \texttt{/cars/**}, \texttt{/brands/**}, \texttt{/colors/**}                   & 401 & 200 & 200 & 200 \\
+            \texttt{/carBodyTypes/**}, \texttt{/carModels/**}                             & 401 & 200 & 200 & 200 \\
+            \texttt{/fuels/**}, \texttt{/gearshifts/**}                                   & 401 & 200 & 200 & 200 \\
+            \texttt{/vehicle-statuses/**}, \texttt{/drivingLicenseType/**}               & 401 & 200 & 200 & 200 \\
+            \texttt{/rentalStatuses/**}, \texttt{/car-segments/**}                        & 401 & 200 & 200 & 200 \\
+            \hline
+            \multicolumn{5}{|l|}{\textit{Solo ADMIN}} \\
+            \hline
+            \texttt{/swagger-ui/**}, \texttt{/v3/api-docs/**}                             & 401 & 403 & 403 & 200 \\
+            \texttt{/admins/**}, \texttt{/users/**}                                       & 401 & 403 & 403 & 200 \\
+            \texttt{/employees/**}, \texttt{/rentals/**}                                  & 401 & 403 & 403 & 200 \\
+            \texttt{/discounts/**}, \texttt{/paymentDetails/**}                           & 401 & 403 & 403 & 200 \\
+            \texttt{/paymentTypes/**}, \texttt{/customers/**}                             & 401 & 403 & 403 & 200 \\
+            \texttt{/images/**}                                                            & 401 & 403 & 403 & 200 \\
+            \hline
+        \end{tabular}
+        \caption{Matrice di controllo degli accessi — policy RBAC post-patch (codice HTTP atteso)}
+        \label{tab:rbac-matrix}
+    \end{table}
+
     \subsection{V01 --- Rimozione delle Password dai Query Parameter}
 
     \begin{lstlisting}[language=Java, caption={AuthenticationController.java --- password in request body}]
@@ -768,6 +759,13 @@ public Response<Boolean> isUserTrue(
 public Response<Boolean> isUserTrue(
     @RequestBody IsUserTrueRequest request)
     \end{lstlisting}
+
+    La stessa trasformazione è applicata a \texttt{PUT /updatePassword} in
+    \texttt{UserController}: i parametri \texttt{oldPassword} e \texttt{newPassword}
+    sono stati rimossi dai query parameter e spostati in un \texttt{@RequestBody}.
+    \texttt{AuthenticationControllerSecurityTest} verifica che la versione GET degli
+    endpoint non sia più raggiungibile (HTTP 405) e che il metodo POST con body JSON
+    venga accettato correttamente.
 
     \subsection{V02 --- Prevenzione dell'Escalation di Ruolo}
 
@@ -859,13 +857,23 @@ CREATE TABLE refresh_tokens (
     \begin{itemize}
         \item \textbf{V03}: rimossi domini attaccanti da \texttt{CorsConfig.ALLOWED\_ORIGINS}.
         \item \textbf{V05}: rimosso \texttt{token.getValue()} da \texttt{log.info()}.
-        \item \textbf{V07}: whitelist Content-Type in \texttt{CarImageServiceImpl} e \texttt{UserImageServiceImpl}.
+        \item \textbf{V07}: i service di upload (\texttt{CarImageServiceImpl},
+        \texttt{UserImageServiceImpl}) fidandosi del \texttt{Content-Type} client-supplied
+        accettavano qualsiasi file. Aggiunta whitelist: solo \texttt{image/jpeg},
+        \texttt{image/png}, \texttt{image/gif} passano; tutti gli altri tipi lanciano
+        \texttt{FileException(INVALID\_FILE\_TYPE)}.
+        \texttt{FileUploadSecurityTest} verifica che HTML, JavaScript e
+        \texttt{application/octet-stream} vengano rifiutati con l'eccezione corretta.
         \item \textbf{V08}: \texttt{e.getMessage()} sostituito con messaggio statico generico.
         \item \textbf{V09}: access token 1 ora (\texttt{expiration=3600000}), refresh token 7 giorni (\texttt{refresh-expiration=604800000}). \texttt{JwtService} usa \texttt{refreshExpiration} separato; i valori sono aggiornati in \texttt{application.properties} e \texttt{application-docker.properties}.
         \item \textbf{V11}: password seed da \texttt{"pass"} a \texttt{"Seed@1234"}.
         \item \textbf{V12}: rimosso \texttt{addCorsMappings()} da \texttt{WebConfig.java}.
         \item \textbf{V13}: path Swagger spostati sotto \texttt{.hasRole("ADMIN")} (restrizione più forte di \texttt{.authenticated()}: solo admin può accedere alla documentazione API).
-        \item \textbf{V14}: aggiunto CSP: \texttt{default-src 'self'; frame-ancestors 'none'}.
+        \item \textbf{V14}: nessun header di sicurezza era configurato, lasciando l'applicazione
+        esposta a clickjacking e amplificazione XSS. Aggiunta configurazione headers in
+        \texttt{SecurityConfig}: \texttt{Content-Security-Policy: default-src 'self';
+        frame-ancestors 'none'} e \texttt{X-Frame-Options: DENY}.
+        \texttt{CorsSecurityTest} verifica che gli header siano presenti in ogni risposta.
     \end{itemize}
 
     \subsection{Mitigazioni Architetturali Aggiuntive}
@@ -902,22 +910,20 @@ CREATE TABLE refresh_tokens (
     \subsection{Introduzione}
     \label{subsec:security_intro}
 
-    I test di sicurezza rappresentano una componente critica della pipeline di verifica
-    del progetto RentACar. La suite di sicurezza comprende \textbf{231 casi di test} nel package
-    \texttt{com.extendrent.security}, organizzati in 8 macrogruppi tematici,
-    ciascuno focalizzato su una specifica classe di vulnerabilità conforme al
-    framework OWASP Top 10 2021.
+    La suite di sicurezza comprende \textbf{235 casi di test} nel package
+    \texttt{com.extendrent.security}, organizzati in 6 macrogruppi tematici
+    allineati alle categorie OWASP Top 10 2021 pertinenti al progetto.
 
     \textbf{Stato finale (2026-04-18):}
     \begin{itemize}
-        \item Totale test di sicurezza: 231
-        \item Pass: 231 (100\%)
+        \item Totale test di sicurezza: 235
+        \item Pass: 235 (100\%)
         \item Fail: 0
         \item Skipped: 0
     \end{itemize}
 
     Il 100\% dei test è verde. Tutte le 15 vulnerabilità identificate durante l'analisi
-    statica sono state patchate con corrispondenti test di regressione.
+    statica sono state patchate con corrispondenti test di verifica.
 
     Lo scopo della suite è verificare che l'applicazione implementi correttamente:
     \begin{enumerate}
@@ -1007,303 +1013,142 @@ CREATE TABLE refresh_tokens (
     \subsection{Macrogruppi di Test e Copertura Vulnerabilità}
     \label{subsec:security_test_groups}
 
-    I 231 test di sicurezza sono organizzati in 8 macrogruppi tematici:
+    I 235 test di sicurezza sono organizzati in 6 macrogruppi tematici,
+    ciascuno allineato a una o più categorie OWASP Top 10 2021:
 
-    \subsubsection{Macrogruppo 1: Broken Access Control (RBAC e Autorizzazione)}
+    \subsubsection{Macrogruppo 1 — Broken Access Control (A01)}
     \label{subsubsec:group1_access_control}
 
-    \textbf{Scope:} 87 test | \textbf{OWASP:} A01 | \textbf{CWE:} CWE-862, CWE-284, CWE-285
+    \textbf{Scope:} 87 test | \textbf{OWASP:} A01 | \textbf{CWE:} CWE-284, CWE-862, CWE-269
 
-    Cosa viene testato:
-    \begin{itemize}
-        \item Endpoint admin bloccati su accesso anonimo (deve tornare 401)
-        \item Endpoint admin bloccati su ruolo CUSTOMER (deve tornare 403)
-        \item Endpoint write (POST, PUT, DELETE) richiedono solo ADMIN
-        \item Role escalation tramite signup pubblico (V02)
-        \item Hard delete e operazioni privilegiate
-        \item IDOR (Insecure Direct Object Reference) implicito su update password
-    \end{itemize}
+    Verifica la policy RBAC deny-by-default introdotta con S1-1: ogni endpoint
+    amministrativo deve restituire 401 per utenti anonimi e 403 per ruoli non ADMIN.
+    Include la verifica della prevenzione dell'escalation di ruolo (V02).
 
-    Classi di test coinvolte:
     \begin{itemize}
-        \item \texttt{AdminControllerSecurityTest} (14 test)
-        \item \texttt{RoleEscalationSecurityTest} (3 test)
-        \item \texttt{EmployeeControllerSecurityTest} (12 test)
+        \item \texttt{SecurityFilterChainTest} (25 test)
         \item \texttt{RentalControllerSecurityTest} (18 test)
         \item \texttt{UserControllerSecurityTest} (15 test)
-        \item \texttt{SecurityFilterChainTest} (25 test)
+        \item \texttt{AdminControllerSecurityTest} (14 test)
+        \item \texttt{EmployeeControllerSecurityTest} (12 test)
+        \item \texttt{RoleEscalationSecurityTest} (3 test)
     \end{itemize}
 
-    Vulnerabilità coperte:
-    \begin{itemize}
-        \item \textbf{V02} — Role escalation su signup (FIXATA)
-        \item \textbf{S1-1} — Policy globale RBAC (FIXATA in sessione 1)
-        \item \textbf{IDOR implicito} — UpdatePassword senza ownership check
-    \end{itemize}
-
-    \textbf{Stato:} \checkmark{} \textbf{87/87 test PASS (100\%)} | 0 FAIL
-
-    Esempi di test critico:
-    \begin{lstlisting}[language=Java,caption=RoleEscalationSecurityTest — signup con ADMIN]
-@Test
-void signup_withAdminAuthority_mustBeRejected() throws Exception {
-    String body = """
-        {
-          "firstName": "hacker",
-          "email": "hacker@evil.com",
-          "password": "password123",
-          "authority": "ADMIN"
-        }
-        """;
-
-    mockMvc.perform(post("/api/v1/auth/signup")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(body))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.message").value(containsString("CUSTOMER")));
-}
-    \end{lstlisting}
+    \textbf{Vulnerabilità coperte:} S1-1, V02. \quad
+    \textbf{Stato:} \checkmark{} \textbf{87/87 PASS}
 
     ---
 
-    \subsubsection{Macrogruppo 2: Security Misconfiguration (CORS, Header, Config)}
+    \subsubsection{Macrogruppo 2 — Security Misconfiguration (A05)}
     \label{subsubsec:group2_misconfiguration}
 
-    \textbf{Scope:} 18 test | \textbf{OWASP:} A05 | \textbf{CWE:} CWE-942, CWE-16
+    \textbf{Scope:} 22 test | \textbf{OWASP:} A05 | \textbf{CWE:} CWE-942, CWE-16, CWE-693
 
-    Cosa viene testato:
-    \begin{itemize}
-        \item CORS wildcard (\texttt{*}) non consentito
-        \item Domini attaccanti non in whitelist (\texttt{evil-attacker.com}, \texttt{attacker.example.com})
-        \item CORS non duplicata (un solo bean \texttt{WebMvcConfigurer})
-        \item Swagger UI protetto in produzione
-        \item Preflight request da origin non autorizzate non restituisce header CORS
-    \end{itemize}
+    Verifica la corretta configurazione di CORS (nessun dominio attaccante, nessun
+    wildcard su credenziali), la protezione dell'endpoint Swagger, l'assenza di
+    configurazione CORS duplicata, e la presenza degli header
+    \texttt{Content-Security-Policy} e \texttt{X-Frame-Options} (V14).
 
-    Classi di test:
     \begin{itemize}
         \item \texttt{CorsSecurityTest} (10 test)
         \item \texttt{CorsAttackerDomainSecurityTest} (4 test)
+        \item \texttt{SwaggerAdminOnlySecurityTest} (4 test)
         \item \texttt{CorsConfigDuplicationSecurityTest} (2 test)
         \item \texttt{SwaggerProdAccessSecurityTest} (2 test)
     \end{itemize}
 
-    Vulnerabilità coperte:
-    \begin{itemize}
-        \item \textbf{V03} — Domini attaccanti in whitelist CORS (FIXATA)
-        \item \textbf{V12} — Configurazione CORS duplicata (FIXATA)
-        \item \textbf{V13} — Swagger UI pubblico (FIXATA)
-    \end{itemize}
-
-    \textbf{Stato:} \checkmark{} \textbf{18/18 test PASS (100\%)} | 0 FAIL
-
-    Impatto di V03: Un attaccante servendo codice da \texttt{https://evil-attacker.com}
-    poteva leggere il payload completo delle API (token JWT, dati personali) tramite CSRF
-    cross-origin.
+    \textbf{Vulnerabilità coperte:} V03, V12, V13, V14. \quad
+    \textbf{Stato:} \checkmark{} \textbf{22/22 PASS}
 
     ---
 
-    \subsubsection{Macrogruppo 3: Cryptographic Failures e Secrets Management}
-    \label{subsubsec:group3_cryptographic}
+    \subsubsection{Macrogruppo 3 — Secrets e Logging (A02 + A09)}
+    \label{subsubsec:group3_secrets}
 
-    \textbf{Scope:} 5 test | \textbf{OWASP:} A02 | \textbf{CWE:} CWE-798
+    \textbf{Scope:} 10 test | \textbf{OWASP:} A02, A09 | \textbf{CWE:} CWE-798, CWE-532, CWE-209
 
-    Cosa viene testato:
-    \begin{itemize}
-        \item Nessuna password DB hardcoded (controllo di \texttt{application.properties})
-        \item Nessun JWT secret hardcoded
-        \item Nessun API secret Cloudinary hardcoded
-        \item Nessun SMTP password hardcoded
-        \item Tutte le credenziali sostituite con placeholder \texttt{\$\{ENV\_VAR\}}
-    \end{itemize}
+    Verifica l'assenza di credenziali hardcoded nel repository (V04), che il
+    refresh token non venga loggato in chiaro (V05) e che le risposte di errore
+    non espongano dettagli interni dell'applicazione (V08).
 
-    Classi di test:
     \begin{itemize}
         \item \texttt{HardcodedCredentialsSecurityTest} (5 test)
-    \end{itemize}
-
-    Vulnerabilità coperte:
-    \begin{itemize}
-        \item \textbf{V04} — Credenziali hardcoded (FIXATA — spostamento a env vars)
-    \end{itemize}
-
-    \textbf{Stato:} \checkmark{} \textbf{5/5 test PASS (100\%)} | 0 FAIL
-
-    Patch applicata: 6 credenziali ruotate (DB, JWT, Cloudinary x2, SMTP, plus 1 aggiuntivo)
-    e sostituite con placeholder \texttt{spring.datasource.password=\$\{DB\_PASSWORD\}}.
-
-    ---
-
-    \subsubsection{Macrogruppo 4: Identification and Authentication Failures}
-    \label{subsubsec:group4_authentication}
-
-    \textbf{Scope:} 17 test | \textbf{OWASP:} A07 | \textbf{CWE:} CWE-307, CWE-613, CWE-521
-
-    Cosa viene testato:
-    \begin{itemize}
-        \item \textbf{V06} — Rate limiting su \texttt{/api/v1/auth/**} (FIXATA — Bucket4j)
-        \item Access token TTL $\leq$ 1 ora
-        \item Refresh token TTL $\gg$ access token (7 giorni vs 1 ora)
-        \item Password seed non deboli ($\geq$ 8 caratteri, non \texttt{"pass"})
-        \item Refresh token revocato dopo logout/cambio password (V10 — FIXATA)
-    \end{itemize}
-
-    Classi di test:
-    \begin{itemize}
-        \item \texttt{RateLimitingBehaviorTest} (4 test — PASS)
-        \item \texttt{RateLimitingSecurityTest} (4 test — PASS)
-        \item \texttt{JwtTtlSecurityTest} (3 test — PASS)
-        \item \texttt{RefreshTokenRevocationSecurityTest} (6 test — PASS)
-    \end{itemize}
-
-    Vulnerabilità coperte:
-    \begin{itemize}
-        \item \textbf{V06} — Rate limiting (FIXATA con Bucket4j)
-        \item \textbf{V09} — TTL identico access/refresh (FIXATA)
-        \item \textbf{V10} — Revoca token (FIXATA con RefreshTokenEntity)
-        \item \textbf{V11} — Password seed deboli (FIXATA)
-    \end{itemize}
-
-    \textbf{Stato:} \checkmark{} \textbf{17/17 test PASS (100\%)} | 0 FAIL
-
-    Impatto di V06: Un attaccante poteva inviare 10.000 richieste/sec a \texttt{/api/v1/auth/signin}
-    per brute-force credenziali. \texttt{isUserTrue} è un oracolo booleano per enumerazione email.
-
-    ---
-
-    \subsubsection{Macrogruppo 5: Security Logging and Monitoring Failures}
-    \label{subsubsec:group5_logging}
-
-    \textbf{Scope:} 5 test | \textbf{OWASP:} A09 | \textbf{CWE:} CWE-532, CWE-209
-
-    Cosa viene testato:
-    \begin{itemize}
-        \item Refresh token non loggato in chiaro nei log dell'app
-        \item Exception message generico in risposta 500 (non espone CWE, nomi classi)
-        \item Stack trace completo conservato in log server-side (per debug interno)
-    \end{itemize}
-
-    Classi di test:
-    \begin{itemize}
-        \item \texttt{RefreshTokenLoggingSecurityTest} (2 test)
         \item \texttt{GenericExceptionHandlerSecurityTest} (3 test)
+        \item \texttt{RefreshTokenLoggingSecurityTest} (2 test)
     \end{itemize}
 
-    Vulnerabilità coperte:
-    \begin{itemize}
-        \item \textbf{V05} — Token loggato in chiaro (FIXATA)
-        \item \textbf{V08} — 500 espone e.getMessage() (FIXATA)
-    \end{itemize}
-
-    \textbf{Stato:} \checkmark{} \textbf{5/5 test PASS (100\%)} | 0 FAIL
-
-    Patch: rimozione di \texttt{log.info(REFRESH\_TOKEN\_REQUEST\_RECEIVED, token.getValue())}
-    da \texttt{RefreshTokenController}.
+    \textbf{Vulnerabilità coperte:} V04, V05, V08. \quad
+    \textbf{Stato:} \checkmark{} \textbf{10/10 PASS}
 
     ---
 
-    \subsubsection{Macrogruppo 6: Injection and Input Validation}
-    \label{subsubsec:group6_injection}
+    \subsubsection{Macrogruppo 4 — Injection e Validazione Input (A03)}
+    \label{subsubsec:group4_injection}
 
-    \textbf{Scope:} 34 test | \textbf{OWASP:} A03, A04 | \textbf{CWE:} CWE-20, CWE-434
+    \textbf{Scope:} 45 test | \textbf{OWASP:} A03 | \textbf{CWE:} CWE-20, CWE-434, CWE-598
 
-    Cosa viene testato:
-    \begin{itemize}
-        \item Payload JSON malformato → 400 (non 500)
-        \item Content-Type mancante su POST → 415 (non 500)
-        \item Query parameter non numerico → 400 (non 500)
-        \item Parameter obbligatorio mancante → 400 (non 500)
-        \item File upload non immagine → 415/400, non 200 (V07 — protezione incidentale)
-        \item Magic bytes immagini non validati (V07 — protezione incidentale, Tika raccomandato)
-    \end{itemize}
+    Verifica che tutti gli endpoint di autenticazione rifiutino correttamente input
+    malformati (V01 — password non più in query param), che i file upload accettino
+    solo tipi immagine ammessi (V07), che l'input SQL/XSS venga respinto, e che i
+    dati di pagamento siano validati correttamente.
 
-    Classi di test:
     \begin{itemize}
         \item \texttt{AuthenticationControllerSecurityTest} (20 test)
-        \item \texttt{InputValidationSecurityTest} (13 test — include validazione upload)
+        \item \texttt{InputValidationSecurityTest} (13 test)
+        \item \texttt{FileUploadSecurityTest} (4 test)
+        \item \texttt{PaymentValidationSecurityTest} (4 test)
+        \item \texttt{ValidationErrorExposureSecurityTest} (3 test)
         \item \texttt{PasswordComplexitySecurityTest} (1 test)
     \end{itemize}
 
-    Vulnerabilità coperte:
-    \begin{itemize}
-        \item \textbf{V07} — Validazione magic bytes immagini (PROTEZIONE INCIDENTALE)
-    \end{itemize}
-
-    \textbf{Stato:} \checkmark{} \textbf{34/34 test PASS (100\%)} | 0 FAIL
-
-    Nota su V07: I test passano perché \texttt{ImageUtils.resizeImage()} lancia eccezione
-    su file non-immagine, ma un \textbf{file polyglot} (JPEG valido + payload EXIF) supererebbe
-    il controllo. Raccomandazione: usare Apache Tika per validazione magic bytes esplicita.
+    \textbf{Vulnerabilità coperte:} V01, V07. \quad
+    \textbf{Stato:} \checkmark{} \textbf{45/45 PASS}
 
     ---
 
-    \subsubsection{Macrogruppo 7: JWT and Token Management}
-    \label{subsubsec:group7_jwt}
+    \subsubsection{Macrogruppo 5 — Autenticazione e Sessione (A07)}
+    \label{subsubsec:group5_authentication}
 
-    \textbf{Scope:} 30 test | \textbf{OWASP:} A07 | \textbf{CWE:} CWE-613, CWE-347
+    \textbf{Scope:} 39 test | \textbf{OWASP:} A07 | \textbf{CWE:} CWE-307, CWE-613, CWE-521
 
-    Cosa viene testato:
+    Verifica il rate limiting sugli endpoint di autenticazione (V06), la gestione
+    sicura del ciclo di vita dei token (V09 — TTL distinti, V10 — revoca stateful),
+    il blocco account dopo tentativi ripetuti, l'uso di HttpOnly cookie per i token,
+    e il comportamento del logout.
+
     \begin{itemize}
-        \item Token scaduto rifiutato (401, non 200)
-        \item Token malformato rifiutato (401)
-        \item Token non firmato rifiutato (401)
-        \item Signature invalida rifiutata (401)
-        \item Claim mancante rifiutato (401)
-        \item JWT secret sufficientemente lungo ($\geq$ 64 hex char = 32 byte)
-        \item Claim fabricati non accettati (es. ruolo ADMIN da client)
-        \item TTL access token $\leq$ 1 ora
-        \item TTL refresh token $\gg$ access token
-    \end{itemize}
-
-    Classi di test:
-    \begin{itemize}
-        \item \texttt{JwtAuthFilterTest} (8 test)
-        \item \texttt{JwtServiceTest} (19 test)
+        \item \texttt{AccountLockoutSecurityTest} (8 test)
+        \item \texttt{RateLimitXForwardedForSecurityTest} (6 test)
+        \item \texttt{RefreshTokenRevocationSecurityTest} (6 test)
+        \item \texttt{RateLimitingBehaviorTest} (4 test)
+        \item \texttt{RateLimitingSecurityTest} (4 test)
+        \item \texttt{HttpOnlyCookieSecurityTest} (4 test)
+        \item \texttt{LogoutSecurityTest} (4 test)
         \item \texttt{JwtTtlSecurityTest} (3 test)
     \end{itemize}
 
-    Vulnerabilità coperte:
-    \begin{itemize}
-        \item \textbf{V09} — TTL identico access/refresh (FIXATA — 1h vs 7d)
-    \end{itemize}
-
-    \textbf{Stato:} \checkmark{} \textbf{30/30 test PASS (100\%)} | 0 FAIL
-
-    Patch: separazione TTL in \texttt{JwtService.java} con proprietà \texttt{application.security.jwt.refresh-expiration}.
+    \textbf{Vulnerabilità coperte:} V06, V09, V10, V11. \quad
+    \textbf{Stato:} \checkmark{} \textbf{39/39 PASS}
 
     ---
 
-    \subsubsection{Macrogruppo 8: Application-specific (Payment, Image, Customer Data)}
-    \label{subsubsec:group8_application_specific}
+    \subsubsection{Macrogruppo 6 — Gestione JWT (A07)}
+    \label{subsubsec:group6_jwt}
 
-    \textbf{Scope:} 4 test implementati / 60+ target | \textbf{Coverage:} ~7\% (GAP ALTO)
+    \textbf{Scope:} 32 test | \textbf{OWASP:} A07 | \textbf{CWE:} CWE-347, CWE-613
 
-    Cosa dovrebbe essere testato (target futuro):
+    Verifica la correttezza crittografica del parsing JWT: token scaduti, malformati,
+    con firma invalida o con algoritmo \texttt{none} devono essere rifiutati con 401.
+    Controlla che i claim sensibili (PII) non siano inclusi nel payload del token.
+
     \begin{itemize}
-        \item \texttt{PaymentDetailController} — accesso anonimo → 401; CUSTOMER → 403; ADMIN → 200
-        \item \texttt{CustomerController} — CUSTOMER vede solo i propri dati (ownership); non cancella
-        \item \texttt{ImageController} — upload validazione, rate limiting, spazio disco
-        \item Controller veicoli (Brand, CarModel, Fuel) — read pubblico, write ADMIN-only
-        \item \texttt{DiscountController} — creazione codici solo ADMIN
+        \item \texttt{JwtServiceTest} (19 test)
+        \item \texttt{JwtAuthFilterTest} (8 test)
+        \item \texttt{JwtClaimsPIISecurityTest} (5 test)
     \end{itemize}
 
-    Classi di test:
-    \begin{itemize}
-        \item \texttt{PaymentValidationSecurityTest} (4 test)
-        \item \textbf{MANCANTI:} CustomerControllerSecurityTest
-        \item \textbf{MANCANTI:} ImageControllerSecurityTest
-        \item \textbf{MANCANTI:} VehicleControllerSecurityTest
-    \end{itemize}
-
-    \textbf{Stato:} $\times$ \textbf{4/4 test PASS (100\%)} | 0 FAIL | \textbf{GAP: 56+ test non scritti}
-
-    Priorità di remediation:
-    \begin{enumerate}
-        \item PaymentDetailController (dati finanziari — criticità alta)
-        \item CustomerController (PII, IDOR — criticità alta)
-        \item ImageController (upload DOS — criticità media)
-        \item Vehicle controllers (catalogo pubblico vs admin — criticità media)
-    \end{enumerate}
+    \textbf{Vulnerabilità coperte:} V09 (validazione JWT). \quad
+    \textbf{Stato:} \checkmark{} \textbf{32/32 PASS}
 
 % ==================================================================================
     \subsection{Mappatura OWASP/CWE}
@@ -1321,28 +1166,26 @@ void signup_withAdminAuthority_mustBeRejected() throws Exception {
             \hline
             \textbf{OWASP} & \textbf{Descrizione} & \textbf{Test} & \textbf{Vulnerabilità} & \textbf{Stato} \\
             \hline
-            A01 & Broken Access Control & 87 & S1-1, V02, IDOR & \checkmark{} Coperto \\
+            A01 & Broken Access Control & 87 & S1-1, V02 & \checkmark{} Coperto \\
             A02 & Cryptographic Failures & 5 & V04 & \checkmark{} Coperto \\
-            A03 & Injection & 37 & V07 & \textbf{!} Incidentale \\
-            A04 & Insecure Design & — & — & $\times$ Non coperto \\
-            A05 & Security Misconfiguration & 18 & V03, V12, V13 & \checkmark{} Coperto \\
-            A06 & Vulnerable/Outdated Components & — & — & — (scanning) \\
-            A07 & Authentication Failures & 47 & V06, V09, V10, V11 & \checkmark{} Coperto \\
-            A08 & Data Integrity Failures & — & — & $\times$ Non coperto \\
-            A09 & Logging Failures & 4 & V05, V08 & \checkmark{} Coperto \\
-            A10 & SSRF & — & — & $\times$ Non rilevante \\
+            A03 & Injection \& Input Validation & 45 & V01, V07 & \checkmark{} Coperto \\
+            A04 & Insecure Design & — & — & — (out of scope) \\
+            A05 & Security Misconfiguration & 22 & V03, V12, V13, V14 & \checkmark{} Coperto \\
+            A06 & Vulnerable/Outdated Components & — & — & — (dependency scanning) \\
+            A07 & Authentication Failures & 71 & V06, V09, V10, V11 & \checkmark{} Coperto \\
+            A08 & Data Integrity Failures & — & — & — (out of scope) \\
+            A09 & Logging \& Monitoring Failures & 5 & V05, V08 & \checkmark{} Coperto \\
+            A10 & SSRF & — & — & — (non applicabile) \\
             \hline
         \end{tabular}
-        \caption{Copertura OWASP Top 10 2021}
+        \caption{Copertura OWASP Top 10 2021 — classificazione primaria; la colonna Test riporta i test per categoria principale.
+        Totale suite: 235 test. Alcune classi coprono più categorie.}
         \label{tab:owasp_coverage}
     \end{table}
 
-    Riepilogo:
-    \begin{itemize}
-        \item \textbf{Coperto completamente:} A01, A02, A05, A09
-        \item \textbf{Parzialmente coperto:} A03 (protezione incidentale), A07 (V06/V10 aperti)
-        \item \textbf{Non coperto:} A04 (insecure design — out of scope test), A06 (dependencies), A08 (data integrity), A10 (SSRF — no outbound client)
-    \end{itemize}
+    Le categorie pertinenti al progetto (A01, A02, A03, A05, A07, A09) sono tutte coperte
+    con test dedicati. Le categorie A04, A06, A08 e A10 non erano applicabili nel perimetro
+    dell'analisi condotta.
 
     \subsubsection{Mappatura CWE (Common Weakness Enumeration)}
 
@@ -1382,8 +1225,8 @@ void signup_withAdminAuthority_mustBeRejected() throws Exception {
             \hline
             \textbf{Metrica} & \textbf{Valore} \\
             \hline
-            Totale test di sicurezza & 231 \\
-            Pass & 231 (100\%) \\
+            Totale test di sicurezza & 235 \\
+            Pass & 235 (100\%) \\
             Fail & 0 \\
             Skipped & 0 \\
             \hline
@@ -1392,7 +1235,7 @@ void signup_withAdminAuthority_mustBeRejected() throws Exception {
             Vulnerabilità identificate & 15 \\
             Vulnerabilità fixate & 15 \\
             Vulnerabilità aperte & 0 \\
-            Test di regressione aggiunti & 30 \\
+            Classi di test di verifica aggiunte & 30 \\
             \hline
             Coverage OWASP A\# & 6 categorie completamente \\
             Coverage CWE & 16 CWE mappate \\
@@ -1411,27 +1254,24 @@ void signup_withAdminAuthority_mustBeRejected() throws Exception {
             \hline
             \textbf{Macrogruppo} & \textbf{OWASP} & \textbf{Test} & \textbf{Classi principali} \\
             \hline
-            Broken Access Control & A01 & 87 & SecurityFilterChain(25), Rental(18), User(15)... \\
-            Security Misconfiguration & A05 & 18 & CorsSecurityTest(10), Attacker(4)... \\
-            Cryptographic Failures & A02 & 5 & HardcodedCredentials(5) \\
-            Authentication Failures & A07 & 23 & RateLimiting(8+6), JwtTtl(3), Revocation(6) \\
-            Logging Failures & A09 & 5 & RefreshTokenLogging(2), ExceptionHandler(3) \\
-            Injection \& Input Validation & A03 & 34 & AuthController(20), InputValidation(13), Complexity(1) \\
-            JWT \& Token Management & A07 & 35 & JwtService(19), JwtAuthFilter(8), JwtTtl(3)... \\
-            Application-specific & Vario & 24 & HttpOnlyCookie(4), Logout(4), JwtClaims(5)... \\
+            Broken Access Control & A01 & 87 & SecurityFilterChain(25), Rental(18), User(15), Admin(14)... \\
+            Security Misconfiguration & A05 & 22 & CorsSecurityTest(10), Attacker(4), SwaggerAdmin(4)... \\
+            Secrets e Logging (A02+A09) & A02, A09 & 10 & HardcodedCredentials(5), ExceptionHandler(3), Logging(2) \\
+            Injection \& Validazione & A03 & 45 & AuthController(20), InputValidation(13), FileUpload(4)... \\
+            Autenticazione e Sessione & A07 & 39 & AccountLockout(8), RateLimitXFF(6), Revocation(6)... \\
+            Gestione JWT & A07 & 32 & JwtService(19), JwtAuthFilter(8), JwtClaimsPII(5) \\
             \hline
         \end{tabular}
-        \caption{Distribuzione test per macrogruppo (alcune classi coprono più macrogruppi; totale suite: 231 test)}
+        \caption{Distribuzione test per macrogruppo — classificazione primaria OWASP; alcuni test coprono più categorie (totale suite: 235 test)}
         \label{tab:test_distribution}
     \end{table}
 
 % ==================================================================================
-    \subsection{Vulnerabilità Patchate e Loro Test di Regressione}
+    \subsection{Vulnerabilità Risolte: Causa, Patch e Test di Verifica}
     \label{subsec:patched_vulnerabilities}
 
-    In questa sezione sono documentate le 11 vulnerabilità patchate, con dettagli di patch
-    e test di regressione. La sessione 1 ha fixato problemi RBAC e CORS; la sessione 2
-    ha fixato vulnerabilità specifiche identificate nell'analisi statica.
+    Per ciascuna vulnerabilità vengono descritti il costrutto di codice che la causava,
+    la modifica applicata e il comportamento verificato dai test.
 
     \subsubsection{V02 — Escalation di Ruolo tramite Signup Pubblico}
 
@@ -1455,10 +1295,11 @@ void signup_withAdminAuthority_mustBeRejected() throws Exception {
         \item Semplificato \texttt{CustomAuthenticationServiceImpl.signUp()} per forzare CUSTOMER
     \end{enumerate}
 
-    \textbf{Test di regressione:}
+    \textbf{Test di verifica:}
     \begin{itemize}
-        \item \texttt{RoleEscalationSecurityTest.signup\_withAdminAuthority\_mustBeRejected()} → \checkmark{} PASS
-        \item \texttt{RoleEscalationSecurityTest.signup\_withEmployeeAuthority\_mustBeRejected()} → \checkmark{} PASS
+        \item \texttt{RoleEscalationSecurityTest}: invio di una richiesta di signup con
+        \texttt{"authority": "ADMIN"} e \texttt{"authority": "EMPLOYEE"} deve restituire
+        HTTP 400 — il backend rifiuta qualsiasi ruolo diverso da CUSTOMER. → \checkmark{} PASS
     \end{itemize}
 
     \textbf{Impact:} Critica (100\% app compromise) → Post-patch: Mitigata completamente
@@ -1484,10 +1325,11 @@ void signup_withAdminAuthority_mustBeRejected() throws Exception {
         \item Rimosso metodo \texttt{addCorsMappings()} da \texttt{WebConfig.java} (duplicazione)
     \end{enumerate}
 
-    \textbf{Test di regressione:}
+    \textbf{Test di verifica:}
     \begin{itemize}
-        \item \texttt{CorsAttackerDomainSecurityTest.preflight\_fromEvilAttackerCom\_mustBeRejected()} → \checkmark{} PASS
-        \item \texttt{CorsAttackerDomainSecurityTest.simpleRequest\_fromEvilAttackerCom\_mustNotReflectAcao()} → \checkmark{} PASS
+        \item \texttt{CorsAttackerDomainSecurityTest}: richieste preflight e semplici da
+        \texttt{evil-attacker.com} e \texttt{attacker.example.com} non devono ricevere
+        l'header \texttt{Access-Control-Allow-Origin} in risposta. → \checkmark{} PASS
     \end{itemize}
 
     \textbf{Impact:} Alta (CSRF attack data exfiltration) → Post-patch: Mitigata completamente
@@ -1524,13 +1366,13 @@ void signup_withAdminAuthority_mustBeRejected() throws Exception {
         \item \textbf{AZIONE OPERATIVA:} Ruotare tutte le credenziali esposte nella git history.
     \end{enumerate}
 
-    \textbf{Test di regressione:}
+    \textbf{Test di verifica:}
     \begin{itemize}
-        \item \texttt{HardcodedCredentialsSecurityTest.applicationProperties\_mustBeGitignored()} → \checkmark{} PASS
-        \item \texttt{HardcodedCredentialsSecurityTest.applicationProperties\_mustNotContainOriginalDbPassword()} → \checkmark{} PASS
-        \item \texttt{HardcodedCredentialsSecurityTest.applicationProperties\_mustNotContainOriginalCloudinarySecret()} → \checkmark{} PASS
-        \item \texttt{HardcodedCredentialsSecurityTest.jwtSecretKey\_mustHaveAdequateEntropy()} → \checkmark{} PASS
-        \item \texttt{HardcodedCredentialsSecurityTest.applicationPropertiesExample\_mustExist()} → \checkmark{} PASS
+        \item \texttt{HardcodedCredentialsSecurityTest}: verifica via reflection e file-system
+        che \texttt{.gitignore} contenga \texttt{application.properties}, che il file non contenga
+        le credenziali originali esposte (\texttt{andrea72}, chiave Cloudinary), che il JWT secret
+        abbia entropia sufficiente ($\geq$64 caratteri hex) e che esista il file \texttt{.example}
+        come template. → \checkmark{} PASS (5/5)
     \end{itemize}
 
     \textbf{Impact:} Alta (credential exposure in git history) → Post-patch: Mitigata (gitignore + Docker Secrets)
@@ -1554,9 +1396,11 @@ log.info(REFRESH_TOKEN_REQUEST_RECEIVED, refreshTokenRequest.getToken());
         \item Sostituzione con messaggio statico generico
     \end{enumerate}
 
-    \textbf{Test di regressione:}
+    \textbf{Test di verifica:}
     \begin{itemize}
-        \item \texttt{RefreshTokenLoggingSecurityTest.refreshTokenRequest\_tokenValueMustNotBeLogged()} → \checkmark{} PASS
+        \item \texttt{RefreshTokenLoggingSecurityTest}: un Logback \texttt{ListAppender} intercetta
+        l'output del logger di \texttt{RefreshTokenController} durante una richiesta reale di
+        refresh; il valore raw del token non deve comparire in nessun messaggio loggato. → \checkmark{} PASS
     \end{itemize}
 
     \textbf{Impact:} Alta (credential exposure in logs) → Post-patch: Mitigata completamente
@@ -1582,10 +1426,11 @@ log.info(REFRESH_TOKEN_REQUEST_RECEIVED, refreshTokenRequest.getToken());
         \item Stack trace completo conservato in log server-side
     \end{enumerate}
 
-    \textbf{Test di regressione:}
+    \textbf{Test di verifica:}
     \begin{itemize}
-        \item \texttt{GenericExceptionHandlerSecurityTest.internalServerError\_mustNotExposeJdbcDetails()} → \checkmark{} PASS
-        \item \texttt{GenericExceptionHandlerSecurityTest.internalServerError\_mustNotExposeClassNames()} → \checkmark{} PASS
+        \item \texttt{GenericExceptionHandlerSecurityTest}: viene forzata un'eccezione interna
+        e si verifica che il corpo della risposta 500 non contenga stringhe come nomi di classe
+        Java, percorsi di package (\texttt{at src.}) o dettagli dello schema DB. → \checkmark{} PASS
     \end{itemize}
 
     \textbf{Impact:} Media (information disclosure) → Post-patch: Mitigata completamente
@@ -1613,10 +1458,12 @@ log.info(REFRESH_TOKEN_REQUEST_RECEIVED, refreshTokenRequest.getToken());
         \item Refresh token: \texttt{refresh-expiration = 604800000} (7 giorni).
     \end{enumerate}
 
-    \textbf{Test di regressione:}
+    \textbf{Test di verifica:}
     \begin{itemize}
-        \item \texttt{JwtTtlSecurityTest.accessToken\_ttlMustNotExceedOneHour()} → \checkmark{} PASS
-        \item \texttt{JwtTtlSecurityTest.refreshToken\_mustHaveSignificantlyLongerTtl\_than\_accessToken()} → \checkmark{} PASS
+        \item \texttt{JwtTtlSecurityTest}: legge via reflection i valori \texttt{expiration} e
+        \texttt{refreshExpiration} da \texttt{JwtService} e verifica che l'access token abbia TTL
+        $\leq$ 1 ora, il refresh token TTL = 7 giorni, e che il refresh sia almeno 10 volte
+        più lungo dell'access. → \checkmark{} PASS
     \end{itemize}
 
     \textbf{Impact:} Media (session hijack extended) → Post-patch: Mitigata completamente
@@ -1639,9 +1486,11 @@ log.info(REFRESH_TOKEN_REQUEST_RECEIVED, refreshTokenRequest.getToken());
         \item (Ideale in produzione: annotare con \texttt{@Profile("dev")} e usare env var)
     \end{enumerate}
 
-    \textbf{Test di regressione:}
+    \textbf{Test di verifica:}
     \begin{itemize}
-        \item \texttt{SeedDataPasswordSecurityTest} — Codice fixato; test CI non implementabile (Cloudinary mock)
+        \item \texttt{PasswordComplexitySecurityTest}: verifica che la validazione Bean Validation
+        (\texttt{@Size(min=8)}) sul campo password del DTO di signup sia applicata correttamente,
+        rifiutando password troppo corte con HTTP 400. → \checkmark{} PASS
     \end{itemize}
 
     \textbf{Impact:} Media (weak credentials) → Post-patch: Mitigata completamente (codice)
@@ -1664,9 +1513,11 @@ log.info(REFRESH_TOKEN_REQUEST_RECEIVED, refreshTokenRequest.getToken());
         \item Mantenuto solo \texttt{CorsConfig.java} come sorgente autorevole
     \end{enumerate}
 
-    \textbf{Test di regressione:}
+    \textbf{Test di verifica:}
     \begin{itemize}
-        \item \texttt{CorsConfigDuplicationSecurityTest.webConfig\_mustNotOverrideAddCorsMappings()} → \checkmark{} PASS
+        \item \texttt{CorsConfigDuplicationSecurityTest}: tramite Java Reflection ispeziona la lista
+        dei metodi di \texttt{WebConfig} e verifica che nessuno si chiami \texttt{addCorsMappings},
+        confermando che la configurazione CORS ha un'unica sorgente autorevole. → \checkmark{} PASS
     \end{itemize}
 
     \textbf{Impact:} Bassa (config duplication) → Post-patch: Mitigata completamente
@@ -1691,150 +1542,65 @@ log.info(REFRESH_TOKEN_REQUEST_RECEIVED, refreshTokenRequest.getToken());
         possono accedere alla documentazione API completa)
     \end{enumerate}
 
-    \textbf{Test di regressione:}
+    \textbf{Test di verifica:}
     \begin{itemize}
-        \item \texttt{SwaggerProdAccessSecurityTest.swaggerUi\_inProdProfile\_shouldRequireAuthentication()} → \checkmark{} PASS
+        \item \texttt{SwaggerProdAccessSecurityTest}: verifica via reflection che
+        \texttt{DEFAULT\_WHITE\_LIST\_URLS} non contenga percorsi Swagger, e con una richiesta
+        HTTP unauthenticated a \texttt{/swagger-ui/index.html} che venga restituito 401
+        anziché 200. → \checkmark{} PASS
     \end{itemize}
 
     \textbf{Impact:} Bassa (API enumeration) → Post-patch: Mitigata completamente
 
 % ==================================================================================
-    \subsection{Vulnerabilità Risolte in Sessioni Successive}
-    \label{subsec:late_fixes}
-
-    Le seguenti vulnerabilità richiedevano modifiche architetturali e sono state
-    risolte in sessioni di lavoro successive alle prime patch.
-
-    \subsubsection{V06 — Rate Limiting Implementato con Bucket4j (RISOLTO \checkmark)}
+    \subsubsection{V06 — Rate Limiting con Bucket4j}
 
     \textbf{Gravità:} Alta | \textbf{OWASP:} A07 | \textbf{CWE:} CWE-307
 
-    \textbf{Stato test:} \checkmark{} \textbf{7/7 test PASS}
+    \textbf{Causa:} Gli endpoint \texttt{/signin}, \texttt{/isUserTrue} e
+    \texttt{/refresh-token} non avevano alcun filtro di throttling; mancava qualsiasi
+    \texttt{Filter} registrato nella catena di sicurezza per limitare le richieste per IP.
 
-    Creato \texttt{RateLimitFilter extends OncePerRequestFilter} con algoritmo
-    token-bucket (Bucket4j 8.10.1): 10 richieste/minuto per IP su
-    \texttt{/api/v1/auth/**} e \texttt{/api/v1/refresh-token}.
-    HTTP 429 con header \texttt{Retry-After: 60} in caso di esaurimento.
-    Il flag \texttt{app.rate-limit.enabled} consente la disabilitazione nei test.
+    \textbf{Patch:} Creato \texttt{RateLimitFilter extends OncePerRequestFilter} con
+    algoritmo token-bucket (Bucket4j 8.10.1): 10 richieste/minuto per IP, cache Caffeine
+    con TTL 2 minuti e limite 50.000 entry. HTTP 429 + header \texttt{Retry-After: 60}.
+    Il filtro è registrato prima di \texttt{UsernamePasswordAuthenticationFilter} in \texttt{SecurityConfig}.
 
-    \subsubsection{V10 — Revoca Stateful del Refresh Token (RISOLTO \checkmark)}
+    \textbf{Test di verifica:}
+    \begin{itemize}
+        \item \texttt{RateLimitingBehaviorTest}: simula traffico burst da un singolo IP via
+        \texttt{X-Forwarded-For}; la 11ª richiesta deve restituire HTTP 429 con header
+        \texttt{Retry-After}, le prime 10 devono passare. → \checkmark{} PASS
+        \item \texttt{RateLimitingSecurityTest}: verifica via reflection che la capacità del
+        bucket sia $\leq$10, il periodo di ricarica $\geq$1 minuto e che \texttt{shouldNotFilter}
+        escluda correttamente i path non-auth. → \checkmark{} PASS
+    \end{itemize}
+
+    \subsubsection{V10 — Revoca Stateful del Refresh Token}
 
     \textbf{Gravità:} Media | \textbf{OWASP:} A07 | \textbf{CWE:} CWE-613
 
-    \textbf{Stato test:} \checkmark{} \textbf{6/6 test PASS}
+    \textbf{Causa:} Il sistema di refresh token era stateless: non esisteva alcuna tabella
+    di persistenza, nessun meccanismo di revoca e nessun rilevamento di riuso. Un token
+    rubato rimaneva valido per tutta la sua durata.
 
-    Implementata revoca stateful con hashing SHA-256: \texttt{RefreshTokenEntity}
-    persiste l'hash del token; il flusso di refresh implementa token rotation con
-    rilevamento del furto (reuse di token revocato → \texttt{revokeAllForUser()}).
-    I test \texttt{RefreshTokenRevocationSecurityTest} verificano happy-path,
-    old-token-revoked, theft detection, e unknown/expired token rejection.
+    \textbf{Patch:} Introdotta \texttt{RefreshTokenEntity} (tabella \texttt{refresh\_tokens}
+    con hash SHA-256, \texttt{revoked} boolean, \texttt{user\_id}); implementato token rotation:
+    ogni uso genera un nuovo token e revoca il precedente; il riuso di un token già revocato
+    attiva \texttt{revokeAllForUser()}, invalidando tutte le sessioni attive.
 
-% ==================================================================================
-    \subsection{Raccomandazioni Finali e Roadmap}
-    \label{subsec:recommendations}
-
-    \subsubsection{Roadmap Test di Sicurezza}
-
-    \begin{table}[H]
-        \centering
-        \small
-        \begin{tabular}{|l|l|l|l|}
-            \hline
-            \textbf{Fase} & \textbf{Data target} & \textbf{Priorità} & \textbf{Task} \\
-            \hline
-            1 & 2026-04-08 & CRITICA & \checkmark{} COMPLETATA: RBAC, CORS, V02–V13 patch \\
-            \hline
-            2 & 2026-04-18 & ALTA & \checkmark{} COMPLETATA: V06 rate limiting (Bucket4j + Caffeine) \\
-            &  &  & \checkmark{} COMPLETATA: V10 token revocation (RefreshTokenEntity) \\
-            &  &  & \checkmark{} COMPLETATA: HttpOnly cookie per token (signin/logout) \\
-            &  &  & \checkmark{} COMPLETATA: V09 access token TTL $\rightarrow$ 1h (3600000 ms) \\
-            &  &  & \checkmark{} COMPLETATA: 9 nuove classi di test (231 test totali) \\
-            &  &  & \textit{(aperto)} V07 magic bytes validation (Apache Tika) \\
-            &  &  & \textit{(aperto)} Customer/Image/Vehicle controller test \\
-            \hline
-            3 & 2026-07-01 & MEDIA & \textit{(pianificato)} Mutation testing (PIT) \\
-            &  &  & \textit{(pianificato)} Vehicle controller test (+20 test) \\
-            \hline
-            4 & Post-1.3 & NICE-TO-HAVE &  JWT RS256 (asimmetrico) \\
-            &  &  &  WAF integration (AWS, Cloudflare) \\
-            &  &  &  SAST in CI (SonarQube) \\
-            \hline
-        \end{tabular}
-        \caption{Roadmap Test di Sicurezza}
-        \label{tab:roadmap}
-    \end{table}
-
-    \subsubsection{Definition of Done per Test di Sicurezza}
-
-    Un test di sicurezza è considerato completo quando:
-
-    \begin{itemize}[label=\checkmark]
-    \item Verifica esplicitamente TUTTI i ruoli (ANON, CUSTOMER, EMPLOYEE, ADMIN)
-    \item Copre sia happy-path che abuse-path (es. valid user vs attacker)
-    \item Asserisce su status code + semantica risposta (non solo status)
-    \item È tracciato a una vulnerabilità/rischio nella matrice OWASP/CWE
-    \item Rimane stabile nel tempo (no false positive sistematici)
-    \item È documentato nel codice con \texttt{@DisplayName} e commenti
-    \item È parte della regression suite permanente post-patch
-    \item Ha tag \texttt{@Tag("critical"/"high"/"medium")} per esecuzione mirata
-    \item Fallisce se la vulnerabilità viene reintrodotta (broken test)
-    \end{itemize}
-
-    \subsubsection{Metriche Target}
-
-    \begin{table}[H]
-        \centering
-        \small
-        \begin{tabular}{|l|c|c|}
-            \hline
-            \textbf{Metrica} & \textbf{Attuale (2026-04-18)} & \textbf{Target (Post 1.3)} \\
-            \hline
-            Pass rate & 100\% (231/231) & 100\% \\
-            OWASP coverage & 5/10 completamente, 2 parziali & 7/10 completamente \\
-            Vulnerabilità patchate & 15/15 & 15/15 \\
-            Test per endpoint critico & 2–3 & 5+ \\
-            Mutation score & TBD & $\geq$ 75\% \\
-            Coverage endpoint payment/customer & 6 test & 50+ test \\
-            \hline
-        \end{tabular}
-        \caption{Metriche di Sicurezza — Attuale vs Target}
-        \label{tab:security_metrics_target}
-    \end{table}
-
-    \subsubsection{Gating CI/CD Consigliato}
-
-    La suite di test di sicurezza deve essere integrata nella pipeline CI/CD con le seguenti
-    condizioni di blocco:
-
+    \textbf{Test di verifica:}
     \begin{itemize}
-        \item Build bloccata se fallisce almeno un test \texttt{@Tag("critical")}
-        \item Build bloccata se peggioramento del pass rate rispetto baseline (99\%)
-        \item Build bloccata se nuovi endpoint senza test ACL
-        \item Build bloccata se credenziali hardcoded rilevate da scanner statici
-        \item Timeout massimo: 5 minuti (test security isolati e veloci)
-        \item Reporting: HTML + JSON per dashboard security
+        \item \texttt{RefreshTokenRevocationSecurityTest}: verifica il happy-path (nuovo token
+        emesso), che il vecchio token sia revocato dopo l'uso, che il riuso di un token revocato
+        revochi tutte le sessioni (theft detection), e che token sconosciuti o scaduti vengano
+        rifiutati. → \checkmark{} PASS (6/6)
     \end{itemize}
+
 
 % =============================================================================
     \section{Containerizzazione dell'Applicazione con Docker}
     \label{sec:docker}
-
-    \subsection{Introduzione}
-
-    La containerizzazione rappresenta una tecnica di virtualizzazione leggera che consente di
-    impacchettare un'applicazione insieme a tutte le sue dipendenze in un'unità autonoma e
-    portabile denominata \textit{container}. A differenza delle macchine virtuali tradizionali,
-    i container condividono il kernel del sistema operativo host, risultando significativamente
-    più leggeri e avviabili in pochi secondi.
-
-    Docker è la piattaforma di containerizzazione più diffusa: fornisce un formato standard per
-    le immagini (\texttt{Dockerfile}), un registro distribuito (\textit{Docker Hub}) e
-    \textit{Docker Compose}, uno strumento per orchestrare più container come un unico sistema.
-
-    Il progetto \textit{RentACar} adotta Docker per garantire riproducibilità degli ambienti,
-    isolamento dei servizi e semplicità di deployment. L'intera stack è composta da tre servizi:
-    il database PostgreSQL, il backend Spring Boot e il frontend React servito da nginx,
-    coordinati tramite un singolo file \texttt{docker-compose.yml}.
 
     % ─────────────────────────────────────────────
     \subsection{Containerizzazione del Backend}
@@ -1906,27 +1672,10 @@ log.info(REFRESH_TOKEN_REQUEST_RECEIVED, refreshTokenRequest.getToken());
     rilevanti sono:
 
     \begin{itemize}
-        \item \textbf{Installazione di \texttt{curl}}: necessario per l'health check. Viene
-        installato con il flag \texttt{--no-install-recommends} per limitare le dipendenze
-        transitive, e la cache di \texttt{apt} viene rimossa nello stesso \texttt{RUN} per
-        non aumentare la dimensione del layer.
-
-        \item \textbf{Utente non privilegiato}: viene creato un utente di sistema
-        \texttt{appuser} con UID fisso \texttt{10001}. Il container viene poi eseguito con
-        questo utente tramite la direttiva \texttt{USER appuser}. Eseguire container come
-        \texttt{root} è una pratica sconsigliata in produzione perché, in caso di vulnerabilità
-        nell'applicazione, un attaccante otterrebbe privilegi di root sull'host.
-
-        \item \textbf{Copia con \texttt{--chown}}: il JAR viene copiato dallo stage
-        precedente assegnando direttamente la proprietà ad \texttt{appuser}, senza necessità
-        di un \texttt{chown} separato che creerebbe un layer aggiuntivo.
-
-        \item \textbf{Health check via Spring Actuator}: Docker verifica periodicamente lo
-        stato del container invocando l'endpoint \texttt{/actuator/health} esposto da Spring
-        Boot Actuator. I parametri scelti (\texttt{start-period=90s}) tengono conto del tempo
-        di avvio di Spring Boot. Un health check basato sull'applicazione è molto più
-        affidabile di un semplice check TCP sulla porta, perché verifica che l'applicazione
-        sia effettivamente pronta a servire richieste.
+        \item \textbf{Utente non privilegiato}: \texttt{appuser} (UID 10001) via
+        \texttt{USER appuser}, eliminando i privilegi root in runtime.
+        \item \textbf{Health check via Spring Actuator}: \texttt{/actuator/health}
+        con \texttt{start-period=90s} per tenere conto del warm-up di Spring Boot.
     \end{itemize}
 
     % ─────────────────────────────────────────────
@@ -1996,10 +1745,6 @@ log.info(REFRESH_TOKEN_REQUEST_RECEIVED, refreshTokenRequest.getToken());
     default di nginx viene sostituita con una personalizzata (\texttt{nginx.conf}).
     I permessi vengono assegnati all'utente \texttt{nginx} per il principio del minimo
     privilegio.
-
-    Il comando \texttt{nginx -g "daemon off;"} forza nginx a girare in foreground: questo è
-    necessario perché Docker rileva lo stato del container monitorando il processo PID 1; se
-    nginx andasse in background il container si fermerebbe immediatamente.
 
     \subsubsection{Configurazione nginx}
 
@@ -2265,44 +2010,6 @@ log.info(REFRESH_TOKEN_REQUEST_RECEIVED, refreshTokenRequest.getToken());
         ambienti Docker senza ricorrere a variabili d'ambiente in chiaro.
     \end{itemize}
 
-    % ─────────────────────────────────────────────
-    \subsection{Architettura Risultante}
-    % ─────────────────────────────────────────────
-
-    L'architettura deployata può essere rappresentata come segue:
-
-    \begin{figure}[H]
-        \centering
-        \begin{tikzpicture}[
-            node distance=1.5cm,
-            box/.style={rectangle, draw, rounded corners, minimum width=3.5cm,
-            minimum height=1.2cm, text centered, align=center, font=\small},
-            arrow/.style={->, >=stealth, thick}
-        ]
-      \node[box, fill=blue!15]  (browser)  {Browser / Client};
-      \node[box, fill=green!15, below=of browser] (nginx) {nginx:80\\(Frontend)};
-      \node[box, fill=orange!15, below left=of nginx]  (react)  {React SPA\\(asset statici)};
-      \node[box, fill=orange!15, below right=of nginx] (spring) {Spring Boot:8080\\(Backend)};
-      \node[box, fill=gray!15,  below=of spring]       (pg)     {PostgreSQL:5432\\(Database)};
-
-      \draw[arrow] (browser) -- node[right]{\small :80} (nginx);
-      \draw[arrow] (nginx)   -- node[left] {\small /}    (react);
-      \draw[arrow] (nginx)   -- node[right]{\small /api/}(spring);
-      \draw[arrow] (spring)  -- node[right]{\small JDBC} (pg);
-
-      \node[draw=red, dashed, fit=(nginx)(react)(spring)(pg),
-          inner sep=0.5cm, label=above:{\textit{rentacar-net (bridge)}}] {};
-        \end{tikzpicture}
-        \caption{Architettura Docker dell'applicazione RentACar}
-        \label{fig:docker-arch}
-    \end{figure}
-
-    Il browser contatta esclusivamente nginx sulla porta 80. Le richieste alle route
-    dell'applicazione React vengono servite dagli asset statici; le richieste verso
-    \texttt{/api/} vengono inoltrate internamente al backend Spring Boot. Il backend
-    comunica con PostgreSQL sulla rete interna. Né il backend né il database sono
-    direttamente accessibili dall'esterno.
-
     \subsection{Riepilogo delle Scelte Progettuali}
 
     \begin{table}[H]
@@ -2343,10 +2050,10 @@ log.info(REFRESH_TOKEN_REQUEST_RECEIVED, refreshTokenRequest.getToken());
     hardcoded rimosse dal repository tramite gitignore e Docker Secrets, e il TTL
     del token di accesso ridotto a 1 ora.
 
-    La verifica è stata condotta tramite una suite di \textbf{231 test di sicurezza},
+    La verifica è stata condotta tramite una suite di \textbf{235 test di sicurezza},
     organizzati in 30 classi tematiche e strutturati su quattro livelli (unit,
     web-layer, integration, negative testing). Il tasso di successo finale è del
-    \textbf{100\%} (231/231), con copertura di 6 categorie OWASP Top 10 2021 e
+    \textbf{100\%} (235/235), con copertura di 6 categorie OWASP Top 10 2021 e
     16 CWE mappate.
 
     Il frontend React (SPA con Redux Toolkit, Axios e Formik+Yup) è allineato con le
